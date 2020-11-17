@@ -7,7 +7,7 @@ function export_gcal_to_gsheet(){
 // It logs the results in the current spreadsheet starting at cell A2 listing the events,
 // dates/times, etc and even calculates event duration (via creating formulas in the spreadsheet) and formats the values.
 //
-// I do re-write the spreadsheet header in Row 1 with every run, as I found it faster to delete then entire sheet content,
+// I do re-write the spreadsheet header in Row 1 with every run, as I found it faster to delete the entire sheet content,
 // change my parameters, and re-run my exports versus trying to save the header row manually...so be sure if you change
 // any code, you keep the header in agreement for readability!
 //
@@ -20,7 +20,7 @@ function export_gcal_to_gsheet(){
 // https://developers.google.com/apps-script/reference/calendar/calendar-event
 //
 
-var mycal = "justingale2@gmail.com";
+var mycal = "iccir919@gmail.com.com";
 var cal = CalendarApp.getCalendarById(mycal);
 
 // Optional variations on getEvents

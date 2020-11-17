@@ -5,3 +5,6 @@ Time Tracker is an experiment to look into the possibility of a function that to
 ## Learning Resources
 - [Google Calendar Node.js Quickstart](https://developers.google.com/calendar/quickstart/nodejs?authuser=1)
 - [Export Google Calendar Entries to a Google Spreadsheet](https://www.cloudbakers.com/blog/export-google-calendar-entries-to-a-google-spreadsheet)
+
+- [Google Apps Script - Class Calendar](https://developers.google.com/apps-script/reference/calendar/calendar)
+- [Google Apps Script - Class CalendarEvent](https://developers.google.com/apps-script/reference/calendar/calendar-event)
