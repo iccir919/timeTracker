@@ -1,60 +1,68 @@
+var calendarName = 'Time Tracker';
+var fromNumberOfDaysAgo = 50;
+
+var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 
 function main(){
-  var calendarName = 'Time Tracker';
-  calendar = CalendarApp.getCalendarsByName(calendarName)[0];
+  var dailyTotalsArray = obtainDailyTotals(fromNumberOfDaysAgo);
   
-  // Display totals from the past two weeks
-  logLastTwoWeeksTotals(calendar);
-  
-  // Display todays totals to Logger
-  logTodaysTotals(calendar);
+  logTotals(dailyTotalsArray);
+  visualizeTotals(dailyTotalsArray);
 }
 
-
-function logLastTwoWeeksTotals(calendar) {
-  var today = new Date();
-  var indexDate = new Date();
-  indexDate.setDate(today.getDate() - 14);
-  
-  while (indexDate.getTime() !== today.getTime()) {
-    daysEvents = calendar.getEventsForDay(indexDate);
-    durationMap = calculateEventsDuration(indexDate, daysEvents);
-    logResults(durationMap);
-    
-    Logger.log("");
-    indexDate.setDate(indexDate.getDate() + 1);
+function logTotals(dailyTotalsArray) {
+  for (let dailyTotal of dailyTotalsArray) {
+    logResults(dailyTotal);
   }
 }
 
-function logTodaysTotals(calendar){
+function visualizeTotals(dailyTotalsArray) {
+  var spreadsheet = SpreadsheetApp.openByUrl(
+    'https://docs.google.com/spreadsheets/d/1ku1P2ZyD9S7PEs0BubNldl4LDlehlP6x4znfkYhpBoE/edit');
+ 
+}
+
+function obtainDailyTotals(fromNumberOfDaysAgo) {
   var today = new Date();
-  todaysEvents = calendar.getEventsForDay(today);
-  durationMap = calculateEventsDuration(today, todaysEvents);
-  logResults(durationMap);
+  var indexDate = new Date();
+  indexDate.setDate(today.getDate() - fromNumberOfDaysAgo);
+  var dailyTotalsArray = [];
+
+  while (indexDate.getTime() <= today.getTime()) {
+    daysEvents = calendar.getEventsForDay(indexDate);
+    
+    dailyTotal = calculateEventsDuration(indexDate, daysEvents);
+    
+    dailyTotalsArray.push(dailyTotal)
+    
+    indexDate.setDate(indexDate.getDate() + 1);
+  }
+  return dailyTotalsArray;
 }
 
 function calculateEventsDuration(date, events) {
-  var durationMap = {};
-  durationMap.date = date;
+  var dailyEvents = {};
+  dailyEvents.date = new Date(date);
   for (let event of events) {
     var title = event.getTitle();
     var duration = diffMinutes(event.getEndTime(), event.getStartTime());
     
-    if (durationMap[title]) {
-      durationMap[title] += duration;
+    if (dailyEvents[title]) {
+      dailyEvents[title] += duration;
     } else {
-      durationMap[title] = duration;
+      dailyEvents[title] = duration;
     }
   }
-  return durationMap;
+  return dailyEvents;
 }
 
-function logResults(durationMap) {
-  Logger.log("  Date: " + durationMap.date.toLocaleDateString("en-US"));
-  for (let event in durationMap) {
+function logResults(dailyTotal) {
+  if (Object.keys(dailyTotal).length === 1) return;
+  Logger.log("  Date: " + dailyTotal.date.toLocaleDateString("en-US"));
+  for (let event in dailyTotal) {
     if (event === "date") continue;
     
-    var duration = (durationMap[event] / 60).toFixed(2);
+    var duration = (dailyTotal[event] / 60).toFixed(2);
     Logger.log(`      ${event}: ${duration} hours`);
   }
 }
