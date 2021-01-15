@@ -1,22 +1,17 @@
 var calendarName = 'Time Tracker';
-var fromNumberOfDaysAgo = 35;
+var fromNumberOfDaysAgo = 30;
 
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 
-function main(){
+function logTotals() {
   var dailyTotalsObject = obtainDailyTotals(fromNumberOfDaysAgo);
-  
-  logTotals(dailyTotalsObject.dailyTotalsArray);
-  visualizeTotals(dailyTotalsObject);
-}
-
-function logTotals(dailyTotalsArray) {
-  dailyTotalsArray.forEach(function(dailyTotal){
+  dailyTotalsObject.dailyTotalsArray.forEach(function(dailyTotal){
     logResults(dailyTotal);
   })
 }
 
-function visualizeTotals(dailyTotalsObject) {
+function visualizeTotals() {
+  var dailyTotalsObject = obtainDailyTotals(fromNumberOfDaysAgo);
   var spreadsheet = SpreadsheetApp.openByUrl(
     'https://docs.google.com/spreadsheets/d/1ku1P2ZyD9S7PEs0BubNldl4LDlehlP6x4znfkYhpBoE/edit');
   
