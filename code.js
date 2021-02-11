@@ -1,34 +1,58 @@
 var calendarName = 'Time Tracker';
-var fromNumberOfDaysAgo = 30;
+var fromNumberOfDaysAgo = 60;
 
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 
 function logTotals() {
   var dailyTotalsObject = obtainDailyTotals(fromNumberOfDaysAgo);
+  var dailyTotalsMap = {}
+
   dailyTotalsObject.dailyTotalsArray.forEach(function(dailyTotal){
-    logResults(dailyTotal);
+    if (Object.keys(dailyTotal).length === 1) return;
+
+    Logger.log("  Date: " + dailyTotal.date.toLocaleDateString("en-US"));
+
+    for (let event in dailyTotal) {
+      if (event === "date") continue;
+
+      var duration = Number(minsToHrs(dailyTotal[event]));
+
+      if (dailyTotalsMap[event]) {
+        dailyTotalsMap[event] += duration
+      } else {
+        dailyTotalsMap[event] = duration
+      }
+
+      Logger.log(`      ${event}: ${duration} hours`);
+    }
   })
+
+  Logger.log('')
+  for (event in dailyTotalsMap) {
+    const eventTotal = dailyTotalsMap[event];
+    Logger.log(`Total for ${event}: ${eventTotal}`);
+  }
 }
 
 function visualizeTotals() {
   var dailyTotalsObject = obtainDailyTotals(fromNumberOfDaysAgo);
   var spreadsheet = SpreadsheetApp.openByUrl(
     'https://docs.google.com/spreadsheets/d/1ku1P2ZyD9S7PEs0BubNldl4LDlehlP6x4znfkYhpBoE/edit');
-  
+
   var sheet = spreadsheet.getSheets()[0];
   sheet.appendRow(["date", ...dailyTotalsObject.eventsList])
-  
+
   for (var dailyTotals of dailyTotalsObject.dailyTotalsArray) {
     var row = [formatDate(dailyTotals.date)];
-    
+
     for (var event of dailyTotalsObject.eventsList) {
       if(dailyTotals[event]) row.push(minsToHrs(dailyTotals[event]));
       else row.push(0)
     }
-    
+
     sheet.appendRow(row);
   }
-  
+
 }
 
 function obtainDailyTotals(fromNumberOfDaysAgo) {
@@ -40,7 +64,7 @@ function obtainDailyTotals(fromNumberOfDaysAgo) {
 
   while (indexDate.getTime() <= today.getTime()) {
     var daysEvents = calendar.getEventsForDay(indexDate);
-    
+
     var dailyTotal = {};
     dailyTotal.date = new Date(indexDate);
     for (let event of daysEvents) {
@@ -49,19 +73,19 @@ function obtainDailyTotals(fromNumberOfDaysAgo) {
       if(!eventsList.includes(title)) eventsList.push(title);
 
       var duration = diffMinutes(event.getEndTime(), event.getStartTime());
-      
+
       if (dailyTotal[title]) {
         dailyTotal[title] += duration;
       } else {
         dailyTotal[title] = duration;
       }
     }
-    
+
     dailyTotalsArray.push(dailyTotal)
-    
+
     indexDate.setDate(indexDate.getDate() + 1);
   }
-  
+
   return {
     "dailyTotalsArray": dailyTotalsArray,
     "eventsList": eventsList
@@ -74,7 +98,7 @@ function calculateEventsDuration(date, events) {
   for (let event of events) {
     var title = event.getTitle();
     var duration = diffMinutes(event.getEndTime(), event.getStartTime());
-    
+
     if (dailyEvents[title]) {
       dailyEvents[title] += duration;
     } else {
@@ -85,14 +109,7 @@ function calculateEventsDuration(date, events) {
 }
 
 function logResults(dailyTotal) {
-  if (Object.keys(dailyTotal).length === 1) return;
-  Logger.log("  Date: " + dailyTotal.date.toLocaleDateString("en-US"));
-  for (let event in dailyTotal) {
-    if (event === "date") continue;
-    
-    var duration = minsToHrs(dailyTotal[event]);
-    Logger.log(`      ${event}: ${duration} hours`);
-  }
+
 }
 
 function diffMinutes(dt2, dt1) {
@@ -108,4 +125,3 @@ function minsToHrs(minutes) {
 function formatDate(date) {
   return `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
 }
-    
