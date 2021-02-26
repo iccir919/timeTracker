@@ -1,10 +1,11 @@
 var calendarName = 'Time Tracker';
-var fromNumberOfDaysAgo = 30;
+var startDate = "01-01-2021";
+var endDate = "01-31-2021";
 
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 
 function logTotals() {
-  var dailyTotalsObject = obtainDailyTotals(fromNumberOfDaysAgo);
+  var dailyTotalsObject = obtainDailyTotals(startDate, endDate);
   var dailyTotalsMap = {}
 
   dailyTotalsObject.dailyTotalsArray.forEach(function(dailyTotal){
@@ -35,7 +36,7 @@ function logTotals() {
 }
 
 function visualizeTotals() {
-  var dailyTotalsObject = obtainDailyTotals(fromNumberOfDaysAgo);
+  var dailyTotalsObject = obtainDailyTotals(startDate, endDate);
   var spreadsheet = SpreadsheetApp.openByUrl(
     'https://docs.google.com/spreadsheets/d/1ku1P2ZyD9S7PEs0BubNldl4LDlehlP6x4znfkYhpBoE/edit');
   
@@ -69,14 +70,14 @@ function visualizeTotals() {
   sheet.insertChart(chartBuilder);
 }
 
-function obtainDailyTotals(fromNumberOfDaysAgo) {
-  var today = new Date();
-  var indexDate = new Date();
-  indexDate.setDate(today.getDate() - fromNumberOfDaysAgo);
+function obtainDailyTotals(startDate, endDate) {
+  var indexDate = new Date(startDate);
+  var endDate = new Date(endDate);
+
   var dailyTotalsArray = [];
   var eventsList = [];
 
-  while (indexDate.getTime() <= today.getTime()) {
+  while (indexDate.getTime() <= endDate.getTime()) {
     var daysEvents = calendar.getEventsForDay(indexDate);
     
     var dailyTotal = {};
