@@ -1,6 +1,6 @@
 var calendarName = 'Time Tracker';
-var startDate = "01-01-2021";
-var endDate = "01-31-2021";
+var startDate = "01-27-2021";
+var endDate = "02-27-2021";
 
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 
@@ -43,6 +43,11 @@ function visualizeTotals() {
   var sheet = spreadsheet.getSheets()[0];
 
   sheet.clear()
+
+  var charts = sheet.getCharts();
+  for(var i=0; i<charts.length; i++){
+    sheet.removeChart(charts[i]);
+  }
 
   sheet.appendRow(["date", ...dailyTotalsObject.eventsList])
   
