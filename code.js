@@ -1,6 +1,6 @@
 var calendarName = 'Time Tracker';
-var startDate = "01-27-2021";
-var endDate = "02-27-2021";
+var startDate = "01-01-2021";
+var endDate = "03-06-2021";
 
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 
@@ -143,6 +143,8 @@ function minsToHrs(minutes) {
 }
 
 function formatDate(date) {
-  return `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  return `${days[date.getDay()]}, ${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
 }
     
