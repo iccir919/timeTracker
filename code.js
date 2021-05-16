@@ -1,42 +1,38 @@
 var calendarName = 'Time Tracker';
-var startDate = "02-14-2021";
+var startDate = "05-01-2021";
 var endDate = "05-14-2021";
-
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
+var countOnlyWeekdays = true;
 
 function logTotals() {
-  var dailyTotalsObject = obtainDailyTotals(startDate, endDate);
-  var dailyTotalsMap = {}
+  var result = getDailyEventTotals(startDate, endDate, countOnlyWeekdays);
+  var eventDurationSums = {}
 
-  dailyTotalsObject.dailyTotalsArray.forEach(function(dailyTotal){
-    if (Object.keys(dailyTotal).length === 1) return;
+  result.dailyEventsData.forEach(function(data){
+    Logger.log("Date: " + data.date.toLocaleDateString("en-US"));
+    for (let event in data.events) {
+      var duration = Number(minsToHrs(data.events[event]));
 
-    Logger.log("  Date: " + dailyTotal.date.toLocaleDateString("en-US"));
-
-    for (let event in dailyTotal) {
-      if (event === "date") continue;
-      
-      var duration = Number(minsToHrs(dailyTotal[event]));
-
-      if (dailyTotalsMap[event]) {
-        dailyTotalsMap[event] += duration
+      if (eventDurationSums[event]) {
+        eventDurationSums[event] += duration
       } else {
-        dailyTotalsMap[event] = duration
+        eventDurationSums[event] = duration
       }
-
-      Logger.log(`      ${event}: ${duration} hours`);
+      Logger.log(`    ${event}: ${duration} hours`);
     }    
   })
 
   Logger.log('')
-  for (event in dailyTotalsMap) {
-    const eventTotal = dailyTotalsMap[event];
-    Logger.log(`Total for ${event}: ${eventTotal}`);
+  for (event in eventDurationSums) {
+    const eventDurationSum = eventDurationSums[event];
+    const weekendsMessage =  `${countOnlyWeekdays === true ? 'Not including' : 'Including'} weekends.`;
+    Logger.log(`Total for ${event}: ${eventDurationSum}`);
+    Logger.log(`Average for ${event} per day: ${eventDurationSum / result.dailyEventsData.length} hours; ${weekendsMessage}`)
   }
 }
 
 function visualizeTotals() {
-  var dailyTotalsObject = obtainDailyTotals(startDate, endDate);
+  var result = getDailyEventTotals(startDate, endDate, countOnlyWeekdays);
   var spreadsheet = SpreadsheetApp.openByUrl(
     'https://docs.google.com/spreadsheets/d/1ku1P2ZyD9S7PEs0BubNldl4LDlehlP6x4znfkYhpBoE/edit');
   
@@ -49,13 +45,13 @@ function visualizeTotals() {
     sheet.removeChart(charts[i]);
   }
 
-  sheet.appendRow(["date", ...dailyTotalsObject.eventsList])
+  sheet.appendRow(["date", ...result.eventsList])
   
-  for (var dailyTotals of dailyTotalsObject.dailyTotalsArray) {
+  for (var dailyTotals of result.dailyEventsData) {
     var row = [formatDate(new Date(dailyTotals.date))];
     
-    for (var event of dailyTotalsObject.eventsList) {
-      if(dailyTotals[event]) row.push(minsToHrs(dailyTotals[event]));
+    for (var event of result.eventsList) {
+      if(dailyTotals.events[event]) row.push(minsToHrs(dailyTotals.events[event]));
       else row.push(0)
     }
     
@@ -75,57 +71,52 @@ function visualizeTotals() {
   sheet.insertChart(chartBuilder);
 }
 
-function obtainDailyTotals(startDate, endDate) {
-  var indexDate = new Date(startDate);
-  var endDate = new Date(endDate);
+function getDailyEventTotals(startDate, endDate, countOnlyWeekdays) {
+    var indexDate = new Date(startDate);
+    var endDate = new Date(endDate);
+    var dailyTotalsArray = [];
+    var eventsList = [];
 
-  var dailyTotalsArray = [];
-  var eventsList = [];
+    while (indexDate.getTime() <= endDate.getTime()) {
 
-  while (indexDate.getTime() <= endDate.getTime()) {
-    var daysEvents = calendar.getEventsForDay(indexDate);
-    
-    var dailyTotal = {};
-    dailyTotal.date = new Date(indexDate);
-    for (let event of daysEvents) {
-      var title = event.getTitle();
+        if (countOnlyWeekdays && isWeekend(indexDate)) {
+          indexDate.setDate(indexDate.getDate() + 1);
+          continue;
+        }
 
-      if(!eventsList.includes(title)) eventsList.push(title);
+        var eventsForDay = calendar.getEventsForDay(indexDate);
+        var dailyTotals = { date: new Date(indexDate) };
+        var eventDurations = {};
 
-      var duration = diffMinutes(event.getEndTime(), event.getStartTime());
-      
-      if (dailyTotal[title]) {
-        dailyTotal[title] += duration;
-      } else {
-        dailyTotal[title] = duration;
-      }
+        for (var event of eventsForDay) {
+          var title = event.getTitle();
+
+          if(!eventsList.includes(title)) eventsList.push(title);
+          var duration = diffMinutes(event.getEndTime(), event.getStartTime());
+          if (eventDurations[title]) {
+            eventDurations[title] += duration;
+          } else {
+            eventDurations[title] = duration;
+          }
+        }
+        dailyTotals.events = eventDurations;
+        dailyTotalsArray.push(dailyTotals);
+        indexDate.setDate(indexDate.getDate() + 1);
     }
-    
-    dailyTotalsArray.push(dailyTotal)
-    
-    indexDate.setDate(indexDate.getDate() + 1);
-  }
-  
-  return {
-    "dailyTotalsArray": dailyTotalsArray,
-    "eventsList": eventsList
-  };
+    return {
+      "dailyEventsData": dailyTotalsArray,
+      "eventsList": eventsList
+    };
 }
 
-function calculateEventsDuration(date, events) {
-  var dailyEvents = {};
-  dailyEvents.date = new Date(date);
-  for (let event of events) {
-    var title = event.getTitle();
-    var duration = diffMinutes(event.getEndTime(), event.getStartTime());
-    
-    if (dailyEvents[title]) {
-      dailyEvents[title] += duration;
-    } else {
-      dailyEvents[title] = duration;
-    }
+function isWeekend(givenDate) {
+  var currentDay = givenDate.getDay();
+  var dateIsInWeekend = (currentDay === 6) || (currentDay === 0);
+  if(dateIsInWeekend==true){
+    return true;
+  } else {
+    return false;
   }
-  return dailyEvents;
 }
 
 function diffMinutes(dt2, dt1) {
