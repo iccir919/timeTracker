@@ -1,6 +1,6 @@
 var calendarName = 'Time Tracker';
-var startDate = "01-01-2021";
-var endDate = "03-06-2021";
+var startDate = "02-14-2021";
+var endDate = "05-14-2021";
 
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 
@@ -126,10 +126,6 @@ function calculateEventsDuration(date, events) {
     }
   }
   return dailyEvents;
-}
-
-function logResults(dailyTotal) {
-
 }
 
 function diffMinutes(dt2, dt1) {
