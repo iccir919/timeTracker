@@ -1,6 +1,6 @@
 var calendarName = 'Time Tracker';
 var startDate = "05-01-2021";
-var endDate = "05-14-2021";
+var endDate = "05-31-2021";
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
 var countOnlyWeekdays = true;
 
@@ -22,12 +22,18 @@ function logTotals() {
     }    
   })
 
+
   Logger.log('')
   for (event in eventDurationSums) {
     const eventDurationSum = eventDurationSums[event];
     const weekendsMessage =  `${countOnlyWeekdays === true ? 'Not including' : 'Including'} weekends.`;
+    let numberOfDays = result.dailyEventsData.length;
+    if (event === "work") {
+      // Account for PTO days
+      numberOfDays = result.dailyEventsData.filter(day => day.events.work !== undefined).length
+    }
     Logger.log(`Total for ${event}: ${eventDurationSum}`);
-    Logger.log(`Average for ${event} per day: ${eventDurationSum / result.dailyEventsData.length} hours; ${weekendsMessage}`)
+    Logger.log(`Average for ${event} per day: ${eventDurationSum / numberOfDays} hours; ${weekendsMessage}`)
   }
 }
 
