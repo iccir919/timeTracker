@@ -1,8 +1,8 @@
 var calendarName = 'Time Tracker';
-var startDate = "05-01-2021";
-var endDate = "05-31-2021";
+var startDate = "09-07-2023";
+var endDate = "11-07-2023";
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
-var countOnlyWeekdays = true;
+var countOnlyWeekdays = false;
 
 function logTotals() {
   var result = getDailyEventTotals(startDate, endDate, countOnlyWeekdays);
