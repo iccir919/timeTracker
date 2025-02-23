@@ -1,11 +1,12 @@
+var startDate = "01-01-2025";
+var endDate = "02-22-2025";
+
 var calendarName = 'Time Tracker';
-var startDate = "09-07-2023";
-var endDate = "11-07-2023";
 var calendar = CalendarApp.getCalendarsByName(calendarName)[0];
-var countOnlyWeekdays = false;
+
 
 function logTotals() {
-  var result = getDailyEventTotals(startDate, endDate, countOnlyWeekdays);
+  var result = getDailyEventTotals(startDate, endDate);
   var eventDurationSums = {}
 
   result.dailyEventsData.forEach(function(data){
@@ -26,15 +27,10 @@ function logTotals() {
   Logger.log('')
   for (event in eventDurationSums) {
     const eventDurationSum = eventDurationSums[event];
-    const weekendsMessage =  `${countOnlyWeekdays === true ? 'Not including' : 'Including'} weekends.`;
     let numberOfDays = result.dailyEventsData.length;
-    if (event === "work") {
-      // Account for PTO days
-      numberOfDays = result.dailyEventsData.filter(day => day.events.work !== undefined).length
-    }
     Logger.log(`Total for ${event}: ${eventDurationSum}`);
-    Logger.log(`Average for ${event} per day: ${eventDurationSum / numberOfDays} hours; ${weekendsMessage}`)
   }
+
 }
 
 function visualizeTotals() {
@@ -64,7 +60,7 @@ function visualizeTotals() {
     sheet.appendRow(row);
   }
 
-  var range = sheet.getRange(1, 1, sheet.getLastRow(), 3);
+  var range = sheet.getRange(1, 1, sheet.getLastRow(), 4);
 
 
   var chartBuilder = sheet.newChart()
@@ -77,18 +73,13 @@ function visualizeTotals() {
   sheet.insertChart(chartBuilder);
 }
 
-function getDailyEventTotals(startDate, endDate, countOnlyWeekdays) {
+function getDailyEventTotals(startDate, endDate) {
     var indexDate = new Date(startDate);
     var endDate = new Date(endDate);
     var dailyTotalsArray = [];
     var eventsList = [];
 
     while (indexDate.getTime() <= endDate.getTime()) {
-
-        if (countOnlyWeekdays && isWeekend(indexDate)) {
-          indexDate.setDate(indexDate.getDate() + 1);
-          continue;
-        }
 
         var eventsForDay = calendar.getEventsForDay(indexDate);
         var dailyTotals = { date: new Date(indexDate) };
@@ -115,16 +106,6 @@ function getDailyEventTotals(startDate, endDate, countOnlyWeekdays) {
     };
 }
 
-function isWeekend(givenDate) {
-  var currentDay = givenDate.getDay();
-  var dateIsInWeekend = (currentDay === 6) || (currentDay === 0);
-  if(dateIsInWeekend==true){
-    return true;
-  } else {
-    return false;
-  }
-}
-
 function diffMinutes(dt2, dt1) {
   var diff =(dt2.getTime() - dt1.getTime()) / 1000;
   diff /= 60;
@@ -133,11 +114,5 @@ function diffMinutes(dt2, dt1) {
 
 function minsToHrs(minutes) {
   return (minutes / 60).toFixed(2);
-}
-
-function formatDate(date) {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-  return `${days[date.getDay()]}, ${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`
 }
     
