@@ -34,7 +34,7 @@ function logTotals() {
 }
 
 function visualizeTotals() {
-  var result = getDailyEventTotals(startDate, endDate, countOnlyWeekdays);
+  var result = getDailyEventTotals(startDate, endDate);
   var spreadsheet = SpreadsheetApp.openByUrl(
     'https://docs.google.com/spreadsheets/d/1ku1P2ZyD9S7PEs0BubNldl4LDlehlP6x4znfkYhpBoE/edit');
   
